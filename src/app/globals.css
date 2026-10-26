@@ -1,0 +1,436 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   AMENSAR — three design systems sharing one set of token names.
+   · "print" (default) — Prépresse: paper, process inks (CMYK), crop & registration marks.
+   · "neon"            — Studio néon: night background, violet / acid lime / cyan light, glass.
+   · "swiss"           — Style suisse: International Typographic Style, fir green on cream, strict grid, flush-left grotesque.
+   The active system is the `data-theme` attribute on <html>, and each one has its own layouts:
+   editorial (components/sections/editorial), bento (components/sections) and a horizontal story
+   of panels (components/sections/swiss). Shared primitives use `prepress:`, `neon:` and `swiss:`
+   variants where their construction differs.
+   Tokens are mirrored in src/lib/tokens.ts for GSAP / Motion / anime.js.
+   ========================================================================== */
+
+/* Not named `print`: that would shadow Tailwind's built-in @media print variant. */
+@custom-variant prepress (&:where([data-theme="print"], [data-theme="print"] *));
+@custom-variant neon (&:where([data-theme="neon"], [data-theme="neon"] *));
+@custom-variant swiss (&:where([data-theme="swiss"], [data-theme="swiss"] *));
+
+/* Horizontal story of the Swiss layout. Keep in sync with STORY_QUERY in components/swiss/Story.tsx. */
+@custom-variant story {
+  @media (min-width: 64rem) and (min-height: 37.5rem) and (prefers-reduced-motion: no-preference) {
+    @slot;
+  }
+}
+
+@theme {
+  /* Paper & ink */
+  --color-paper: #f3efe7;
+  --color-paper-dim: #e7e1d4;
+  --color-ink: #0d0d0d;
+  --color-ink-soft: #2a2826;
+  --color-muted: #6f6a62;
+  --color-line: rgb(13 13 13 / 0.12);
+  --color-line-inverse: rgb(243 239 231 / 0.16);
+
+  /* Process inks (CMYK) — the token names every system reuses */
+  --color-cyan: #00a0e3;
+  --color-magenta: #e5007d;
+  --color-yellow: #ffdd00;
+  --color-key: #0d0d0d;
+
+  /* Type scale (fluid) */
+  /* Display caps stay under ~1.19em per glyph, so 10.8vw fits "AMENSAR" (7 glyphs) inside the gutters. */
+  --text-display: clamp(2.5rem, 10.8vw, 10.5rem);
+  --text-display--line-height: 0.82;
+  --text-display--letter-spacing: -0.045em;
+  --text-h1: clamp(2.75rem, 7.2vw, 7rem);
+  --text-h1--line-height: 0.9;
+  --text-h1--letter-spacing: -0.035em;
+  --text-h2: clamp(2rem, 4.6vw, 4.25rem);
+  --text-h2--line-height: 0.95;
+  --text-h2--letter-spacing: -0.03em;
+  --text-h3: clamp(1.375rem, 2.2vw, 2rem);
+  --text-h3--line-height: 1.1;
+  --text-h3--letter-spacing: -0.02em;
+  --text-lead: clamp(1.125rem, 1.55vw, 1.5rem);
+  --text-lead--line-height: 1.45;
+  --text-label: 0.72rem;
+  --text-label--line-height: 1;
+  --text-label--letter-spacing: 0.16em;
+
+  /* Spacing */
+  --spacing-section: clamp(6rem, 12vw, 11rem);
+  --spacing-gutter: clamp(1.25rem, 4vw, 3.5rem);
+
+  /* Radii */
+  --radius-card: 1.25rem;
+  --radius-tile: 0.75rem;
+
+  /* Motion */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-expo: cubic-bezier(0.87, 0, 0.13, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --animate-spin-slow: spin 18s linear infinite;
+}
+
+/* Not `inline`: utilities read the variables at runtime so a theme can swap families. */
+@theme {
+  --font-display: var(--font-syne), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+}
+
+/* Per-element knobs: a card's hover or colour must not leak into the buttons nested inside it. */
+@property --hard-k {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 1;
+}
+
+@property --glow {
+  syntax: "*";
+  inherits: false;
+}
+
+@property --card-bg {
+  syntax: "*";
+  inherits: false;
+}
+
+@property --neon-card-bg {
+  syntax: "*";
+  inherits: false;
+}
+
+/* Outline weight and offset-shadow size used by `hard` / `card`; Studio néon sets its own outline. */
+:root {
+  --hard-w: 0px;
+  --hard-o: 0px;
+}
+
+/* ---------- Theme: Prépresse (default) ---------- */
+
+/* Shared bento pieces (design-system page) read as plain paper cards with a hairline. */
+[data-theme="print"] .card {
+  border: 1px solid var(--color-line);
+}
+
+[data-theme="print"] .hard-lift:hover,
+[data-theme="print"] .hard-lift:active {
+  translate: none;
+}
+
+[data-theme="print"] .text-hard-shadow {
+  text-shadow: none;
+}
+
+/* ---------- Theme: Studio néon ---------- */
+
+[data-theme="neon"] {
+  color-scheme: dark;
+
+  --color-paper: #07070c;
+  --color-paper-dim: #0f0f18;
+  --color-ink: #f1f0fa;
+  --color-ink-soft: #bdbbd2;
+  --color-muted: #84819c;
+  --color-line: rgb(241 240 250 / 0.1);
+  --color-line-inverse: rgb(241 240 250 / 0.12);
+
+  --color-cyan: #3ee6ff;
+  --color-magenta: #a66bff;
+  --color-yellow: #c6ff3d;
+  --color-key: #07070c;
+
+  --font-display: var(--font-grotesk), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 1.75rem;
+  --radius-tile: 1rem;
+
+  --hard-w: 1px;
+  --hard-o: 0px;
+  --hard-border: rgb(241 240 250 / 0.12);
+}
+
+/* Inverse surfaces (footer, dark bands) stay dark in néon: ink becomes a raised night tone and
+   paper becomes the light text, so `bg-ink text-paper` keeps working unchanged.
+   `data-surface="paper"` restores the page values for a light card placed on such a band. */
+[data-theme="neon"] [data-surface="ink"] {
+  --color-ink: #11111b;
+  --color-paper: #f1f0fa;
+}
+
+[data-theme="neon"] [data-surface="paper"] {
+  --color-ink: #f1f0fa;
+  --color-paper: #07070c;
+}
+
+[data-theme="neon"] .mix-blend-multiply {
+  mix-blend-mode: screen;
+}
+
+[data-theme="neon"] .card {
+  background-color: var(--neon-card-bg, rgb(241 240 250 / 0.045));
+  backdrop-filter: blur(18px) saturate(140%);
+}
+
+[data-theme="neon"] .hard-lift:hover {
+  translate: 0 -3px;
+}
+
+[data-theme="neon"] .hard-lift:active {
+  translate: 0 1px;
+}
+
+[data-theme="neon"] .text-outline-ink {
+  -webkit-text-stroke-color: var(--color-cyan);
+  filter: drop-shadow(0 0 14px rgb(62 230 255 / 0.45));
+}
+
+[data-theme="neon"] .text-outline-paper {
+  -webkit-text-stroke-color: rgb(166 107 255 / 0.9);
+}
+
+[data-theme="neon"] .text-hard-shadow {
+  text-shadow: none;
+}
+
+/* ---------- Theme: Style suisse ---------- */
+
+[data-theme="swiss"] {
+  --color-paper: #f3eddf;
+  --color-paper-dim: #e7dfcc;
+  --color-ink: #13211a;
+  --color-ink-soft: #33433a;
+  --color-muted: #6f7a70;
+  --color-line: rgb(19 33 26 / 0.14);
+  --color-line-inverse: rgb(243 237 223 / 0.2);
+
+  --color-cyan: #6f8f74;
+  --color-magenta: #1e5a3c;
+  --color-yellow: #d9b45a;
+  --color-key: #13211a;
+
+  --font-display: var(--font-inter-tight), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-sans: var(--font-inter-tight), "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  --radius-card: 0px;
+  --radius-tile: 0px;
+
+  --hard-w: 0px;
+  --hard-o: 0px;
+}
+
+/* No boxes: a card hangs from a heavy rule, like a column on a Swiss poster. */
+[data-theme="swiss"] .card {
+  border-top: 2px solid var(--color-ink);
+}
+
+[data-theme="swiss"] .hard-lift:hover,
+[data-theme="swiss"] .hard-lift:active {
+  translate: none;
+}
+
+[data-theme="swiss"] .text-hard-shadow {
+  text-shadow: none;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* ---------- Base ---------- */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* The page is server-rendered with the Prépresse layout; until React swaps in the layout of a saved
+   theme, hide the mismatching one instead of flashing it. */
+html:not([data-theme="print"]) [data-layout="print"],
+html:not([data-theme="neon"]) [data-layout="neon"],
+html:not([data-theme="swiss"]) [data-layout="swiss"] {
+  visibility: hidden;
+}
+
+::selection {
+  background: var(--color-yellow);
+  color: var(--color-key);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-magenta);
+  outline-offset: 3px;
+}
+
+/* Elements revealed by GSAP / anime.js start hidden to avoid a flash before hydration. */
+.reveal-init {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .reveal-init {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* ---------- Utilities ---------- */
+
+@utility container-x {
+  width: 100%;
+  max-width: 96rem;
+  margin-inline: auto;
+  padding-inline: var(--spacing-gutter);
+}
+
+@utility label {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  line-height: var(--text-label--line-height);
+  letter-spacing: var(--text-label--letter-spacing);
+  text-transform: uppercase;
+}
+
+/* Outlined construction: outline + offset shadow. `--hard-k` scales the offset per element,
+   `--hard-c` recolours the shadow, `--glow` adds a néon halo on top. */
+@utility hard {
+  border: var(--hard-w) solid var(--hard-border, var(--color-ink));
+  box-shadow:
+    calc(var(--hard-o) * var(--hard-k, 1)) calc(var(--hard-o) * var(--hard-k, 1)) 0 0 var(--hard-c, var(--color-ink)),
+    var(--glow, 0 0 #0000);
+}
+
+/* Never combine with a bg-* utility: set `[--card-bg:…]` instead so néon can turn it into glass. */
+@utility card {
+  border-radius: var(--radius-card);
+  background-color: var(--card-bg, var(--color-paper));
+  border: var(--hard-w) solid var(--hard-border, var(--color-ink));
+  box-shadow:
+    calc(var(--hard-o) * var(--hard-k, 1)) calc(var(--hard-o) * var(--hard-k, 1)) 0 0 var(--hard-c, var(--color-ink)),
+    var(--glow, 0 0 #0000);
+}
+
+@utility hard-lift {
+  transition:
+    translate 0.25s var(--ease-out-expo),
+    box-shadow 0.25s var(--ease-out-expo),
+    background-color 0.25s,
+    color 0.25s;
+  &:hover {
+    translate: -3px -3px;
+    --hard-k: 1.6;
+  }
+  &:active {
+    translate: 2px 2px;
+    --hard-k: 0;
+  }
+}
+
+@utility text-hard-shadow {
+  text-shadow: 0.05em 0.05em 0 var(--hard-text, var(--color-magenta));
+}
+
+@utility text-outline-ink {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--color-ink);
+}
+
+@utility text-outline-paper {
+  color: transparent;
+  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--color-paper) 80%, transparent);
+}
+
+/* Prépresse building blocks */
+@utility grain {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.08;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+@utility halftone {
+  background-image: radial-gradient(currentColor 1px, transparent 1.2px);
+  background-size: 10px 10px;
+}
+
+@utility mask-line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
+@utility hide-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Néon building blocks */
+/* Never combine with a bg-* utility on the same element: both set background-color. */
+@utility glass {
+  background-color: rgb(241 240 250 / 0.045);
+  box-shadow:
+    inset 0 0 0 1px rgb(241 240 250 / 0.1),
+    inset 0 1px 0 rgb(241 240 250 / 0.12);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+
+@utility glow-magenta {
+  --glow: 0 0 0 1px rgb(166 107 255 / 0.5), 0 0 36px -6px rgb(166 107 255 / 0.75);
+  box-shadow: var(--glow);
+}
+
+@utility glow-yellow {
+  --glow: 0 0 0 1px rgb(198 255 61 / 0.6), 0 0 36px -8px rgb(198 255 61 / 0.8);
+  box-shadow: var(--glow);
+}
+
+@utility glow-cyan {
+  --glow: 0 0 0 1px rgb(62 230 255 / 0.5), 0 0 36px -8px rgb(62 230 255 / 0.7);
+  box-shadow: var(--glow);
+}
+
+@utility neon-grid {
+  background-image:
+    linear-gradient(rgb(241 240 250 / 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(241 240 250 / 0.06) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
+}
+
+@utility neon-gradient-text {
+  background: linear-gradient(100deg, var(--color-magenta), var(--color-cyan) 55%, var(--color-yellow));
+  background-clip: text;
+  color: transparent;
+}
